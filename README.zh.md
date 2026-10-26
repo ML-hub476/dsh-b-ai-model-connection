@@ -1,10 +1,10 @@
-# B-dsh-LocalAndOnline-model-connection
+# dsh-b-ai-model-connection
 
 [English](README.md) | **简体中文**
 
 DeepSeek Harness 的**本地 + 在线**模型一次安装：在自己的电脑上运行开源 GGUF 模型，也可以在同一
 个“设置 → 模型”页登录 Claude Pro/Max 或 ChatGPT Plus/Pro。
-**不需要 Ollama、不需要 LM Studio、不需要 Python。** 引擎随插件一起安装。
+引擎随插件一起安装。
 
 > GitHub 仓库保留原来的地址（`ML-hub476/b-dsh-local-models`），产品名现在是
 > **B-dsh-LocalAndOnline-model-connection**。
