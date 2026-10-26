@@ -4,7 +4,7 @@
 
 One install for **local and online models** in DeepSeek Harness: run open-source GGUF models on
 your own computer, and sign in to Claude Pro/Max or ChatGPT Plus/Pro from the same Models page.
-**No Ollama, no LM Studio, no Python.** The engine ships with the plugin.
+The engine ships with the plugin.
 
 > The GitHub repository keeps its original address (`ML-hub476/b-dsh-local-models`); the product
 > name is now **B-dsh-LocalAndOnline-model-connection**.
