@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "B-dsh-LocalAndOnline-model-connection",
+    "description": "Installs B-1001 (local engine), B-1002 (local-models card), and B-1003 (Claude/ChatGPT sign-in) together, as one plugin."
+  }
+}

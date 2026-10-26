@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "B-dsh-LocalAndOnline-model-connection",
+    "description": "一次性安装 B-1001（本地引擎）、B-1002（本地模型卡片）与 B-1003（Claude / ChatGPT 登录）。"
+  }
+}

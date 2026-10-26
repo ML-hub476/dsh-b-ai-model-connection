@@ -1,0 +1,10 @@
+# B-1003 AI Connection — subscription sign-in for Claude and ChatGPT.
+#
+# The Models page already lists every installed pi-ai provider, and
+# @deepseek-ai/dsh-llm-pi-ai already registers the provider-owned sign-in
+# flows. This row adds the missing bridge and the card extension that calls
+# them; it does not enable, disable, or configure any provider route.
+
+- insert:
+    - id: b-1003-ai-connection
+      name: '@ml-hub476/b-1003-ai-connection'

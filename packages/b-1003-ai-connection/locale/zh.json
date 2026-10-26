@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "B-1003 AI 连接",
+    "description": "在设置 → 模型页登录 Claude Pro/Max 与 ChatGPT Plus/Pro。使用服务商自己的登录流程，令牌保存在 Harness 凭据库中。"
+  }
+}

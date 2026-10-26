@@ -1,8 +1,8 @@
 {
-  "name": "b-dsh-local-models",
-  "version": "0.2.0",
+  "name": "b-dsh-local-and-online-model-connection",
+  "version": "0.4.0",
   "private": true,
-  "description": "B-coded local model plugins for DeepSeek Harness: B-1001 card, B-1002 engine, B-1003 bundle.",
+  "description": "B-dsh-LocalAndOnline-model-connection: local and online model plugins for DeepSeek Harness — B-1001 local engine, B-1002 local-models card, B-1003 Claude/ChatGPT sign-in, and the one-install package.",
   "type": "module",
   "license": "MIT",
   "author": "Bing Dai",
@@ -14,8 +14,10 @@
     "dsh-plugin",
     "deepseek-harness",
     "local-models",
-    "ollama",
-    "llama.cpp"
+    "llama.cpp",
+    "claude",
+    "chatgpt",
+    "oauth"
   ],
   "workspaces": [
     "packages/*"

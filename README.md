@@ -1,9 +1,13 @@
-# B · Local Models Kit for DeepSeek Harness
+# B-dsh-LocalAndOnline-model-connection
 
 **English** | [简体中文](README.zh.md)
 
-Run open-source models on your own computer: search Hugging Face, download a GGUF file, and pick
-it in the model menu. **No Ollama, no LM Studio, no Python.** The engine ships with the plugin.
+One install for **local and online models** in DeepSeek Harness: run open-source GGUF models on
+your own computer, and sign in to Claude Pro/Max or ChatGPT Plus/Pro from the same Models page.
+**No Ollama, no LM Studio, no Python.** The engine ships with the plugin.
+
+> The GitHub repository keeps its original address (`ML-hub476/b-dsh-local-models`); the product
+> name is now **B-dsh-LocalAndOnline-model-connection**.
 
 ---
 
@@ -13,7 +17,8 @@ it in the model menu. **No Ollama, no LM Studio, no Python.** The engine ships w
 |---|---|---|
 | **B-1001** | `b-1001-local-engine` | The engine. Searches Hugging Face, downloads models into `~/.dsh/local-engine/models`, runs them with llama.cpp in a child process, and serves an OpenAI-compatible endpoint. |
 | **B-1002** | `b-1002-local-models` | The card on **Settings → Models**. Engine status, your model shelf, Hugging Face search, your computer's CPU/memory/disk, fit marks, and a detail page with three suggested downloads. |
-| **B-1003** | `b-1003-local-models-bundle` | The bundle. Installs B-1001 and B-1002 in one step — **install this one**. |
+| **B-1003** | `b-1003-ai-connection` | Claude / ChatGPT account sign-in on **Settings → Models**. Adds the **Sign in** block to each provider card and keeps the token in the Harness credential store. Included by the package below. |
+| **B-dsh** | `b-dsh-local-and-online-model-connection` | The package. Installs **B-1001, B-1002, and B-1003 in one step** — **install this one**. |
 
 ---
 
@@ -87,13 +92,13 @@ You will usually see `web` (if you start the app with `npx @deepseek-ai/dsh web`
 ### 4. Install the plugin
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-local-models-bundle"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-dsh-local-and-online-model-connection"
 ```
 
 Replace `web` with the name from step 3.
 
 > Using the **desktop app** instead of npx? The command is
-> `dsh plugin --profile desktop add "$PWD/packages/b-1003-local-models-bundle"`.
+> `dsh plugin --profile desktop add "$PWD/packages/b-dsh-local-and-online-model-connection"`.
 
 ### 5. Restart the app
 
@@ -112,6 +117,26 @@ npx @deepseek-ai/dsh web
 4. Open a result, choose **Quality**, **Balanced** or **Compact**, and press **Download**.
 5. Press **Use**.
 6. In the chat box, open the model menu and pick the model under **Local (built-in)**.
+
+### 7. Optional: sign in to Claude or ChatGPT (B-1003)
+
+B-1003 is **already included** when you installed the package in step 4. This step is only for a
+local-models-only install, or for someone who wants the sign-in card without the local engine.
+
+The command below installs B-1003 on its own. Do not run it beside the package from step 4 — the
+row ids would collide.
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
+```
+
+Use the same profile name as step 3.
+
+Then open **Settings → Models**, find the **Anthropic** or **OpenAI Codex** card, and press
+**Sign in** in the **B-1003** block. The sign-in happens on the provider's own page; the token
+stays on this Mac in the Harness credential store. **Sign out** removes it.
+
+Full details: [B-1003 README](packages/b-1003-ai-connection/README.md).
 
 ---
 
@@ -136,7 +161,13 @@ npx @deepseek-ai/dsh plugin --profile web list
 If a future version is published to npm, update it the same way you installed it:
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-local-models-bundle@latest
+npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-dsh-local-and-online-model-connection@latest
+```
+
+The AI connection package updates the same way:
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-ai-connection@latest
 ```
 
 ## How the fit marks work
@@ -169,6 +200,8 @@ The three suggestions on each model page mean:
 | Engine never says **Running** | Check `node -v` is 20+. A model has to be downloaded before the engine can start. |
 | Model answers slowly, computer swaps | Pick **Compact**, or choose a smaller model. |
 | Plugin not listed after install | Restart the app (step 5); check the profile name in step 3. |
+| No **B-1003** block on a provider card | The provider row is not saved in Models, or the installed pi-ai catalog offers no sign-in for it. Save the provider first; see the [B-1003 README](packages/b-1003-ai-connection/README.md). |
+| B-1003 login page opens but never returns | The browser must be on this Mac for the automatic callback. Otherwise paste the code shown in the browser into the B-1003 block. |
 | `cd: no such file or directory` | You are in the wrong folder. Run `cd ~` first, or find the clone with `find ~ -maxdepth 4 -type d -name "*local-models*"`. A ZIP download is usually named `b-dsh-local-models-main`. |
 
 ---
@@ -181,6 +214,8 @@ The three suggestions on each model page mean:
 - **One model at a time.** The engine holds a single model in memory.
 - **Capabilities are inferred.** Hugging Face does not label "tool use" or "reasoning", so those
   chips come from the repository name and tags, and the detail page says so.
+- **Subscription sign-in depends on the provider.** B-1003 can only offer the flows the installed
+  pi-ai catalog ships, and the provider can change or withdraw them at any time.
 
 ---
 
@@ -188,9 +223,10 @@ The three suggestions on each model page mean:
 
 ```
 packages/
-  b-1001-local-engine/          the engine (host only)
-  b-1002-local-models/          the card (client only)
-  b-1003-local-models-bundle/   the bundle that installs both
+  b-1001-local-engine/                        the engine (host only)
+  b-1002-local-models/                        the card (client only)
+  b-1003-ai-connection/                       Claude / ChatGPT sign-in card and Host bridge
+  b-dsh-local-and-online-model-connection/    the package that installs all three
 ```
 
 ## License

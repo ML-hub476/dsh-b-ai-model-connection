@@ -1,0 +1,57 @@
+{
+  "name": "@ml-hub476/b-1003-ai-connection",
+  "version": "0.1.0",
+  "private": false,
+  "description": "B-1003 AI Connection — sign in to Claude Pro/Max and ChatGPT Plus/Pro from Settings → Models, using each provider's own subscription sign-in instead of copying API keys.",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/en.json",
+    "locale/zh.json",
+    "icon.svg",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "anthropic",
+    "claude",
+    "openai",
+    "chatgpt",
+    "oauth",
+    "subscription",
+    "b-1003"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ML-hub476/b-dsh-local-models.git",
+    "directory": "packages/b-1003-ai-connection"
+  },
+  "homepage": "https://github.com/ML-hub476/b-dsh-local-models#readme",
+  "bugs": {
+    "url": "https://github.com/ML-hub476/b-dsh-local-models/issues"
+  },
+  "author": "Bing Dai"
+}

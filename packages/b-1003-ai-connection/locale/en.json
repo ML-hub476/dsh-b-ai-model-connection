@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "B-1003 AI Connection",
+    "description": "Sign in to Claude Pro/Max and ChatGPT Plus/Pro from Settings → Models. Uses each provider's own sign-in flow and keeps the token in the Harness credential store."
+  }
+}

@@ -1,9 +1,13 @@
-# B · DeepSeek Harness 本地模型套件
+# B-dsh-LocalAndOnline-model-connection
 
 [English](README.md) | **简体中文**
 
-在自己的电脑上运行开源模型：在 Hugging Face 上搜索、下载 GGUF 文件，然后在模型菜单里选用。
+DeepSeek Harness 的**本地 + 在线**模型一次安装：在自己的电脑上运行开源 GGUF 模型，也可以在同一
+个“设置 → 模型”页登录 Claude Pro/Max 或 ChatGPT Plus/Pro。
 **不需要 Ollama、不需要 LM Studio、不需要 Python。** 引擎随插件一起安装。
+
+> GitHub 仓库保留原来的地址（`ML-hub476/b-dsh-local-models`），产品名现在是
+> **B-dsh-LocalAndOnline-model-connection**。
 
 ---
 
@@ -13,7 +17,8 @@
 |---|---|---|
 | **B-1001** | `b-1001-local-engine` | 引擎：搜索 Hugging Face，把模型下载到 `~/.dsh/local-engine/models`，用 llama.cpp 在子进程中运行，并提供 OpenAI 兼容接口。 |
 | **B-1002** | `b-1002-local-models` | “设置 → 模型”页上的卡片：引擎状态、模型列表、Hugging Face 搜索、本机 CPU/内存/磁盘、适配标记，以及带三个推荐下载的详情页。 |
-| **B-1003** | `b-1003-local-models-bundle` | 套件：一次装好 B-1001 与 B-1002 —— **装这一个就够了**。 |
+| **B-1003** | `b-1003-ai-connection` | “设置 → 模型”页上的 Claude / ChatGPT 账号登录。给每张服务商卡片加上**登录**区块，令牌保存在 Harness 凭据库中。已包含在下面的安装包里。 |
+| **B-dsh** | `b-dsh-local-and-online-model-connection` | 安装包：**一次装好 B-1001、B-1002 与 B-1003** —— **装这一个就够了**。 |
 
 ---
 
@@ -85,13 +90,13 @@ ls ~/.dsh/profiles
 ### 4. 安装插件
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-local-models-bundle"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-dsh-local-and-online-model-connection"
 ```
 
 把 `web` 换成第 3 步看到的名字。
 
 > 用的是**桌面版**而不是 npx？命令是：
-> `dsh plugin --profile desktop add "$PWD/packages/b-1003-local-models-bundle"`
+> `dsh plugin --profile desktop add "$PWD/packages/b-dsh-local-and-online-model-connection"`
 
 ### 5. 重启应用
 
@@ -109,6 +114,25 @@ npx @deepseek-ai/dsh web
 4. 点开一个结果，选 **Quality / Balanced / Compact** 之一，点 **下载**。
 5. 点 **使用**。
 6. 在聊天框打开模型菜单，选中 **Local (built-in)** 下面的那个模型。
+
+### 7. 可选：登录 Claude 或 ChatGPT（B-1003）
+
+如果按第 4 步安装了安装包，**B-1003 已经包含在内**。这一步只适用于“只装本地模型”的安装，
+或者只想单独要登录卡片、不装本地引擎的情况。
+
+下面的命令会单独安装 B-1003。不要把它和第 4 步的安装包并存 —— 行 id 会冲突。
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
+```
+
+profile 名字与第 3 步相同。
+
+然后打开**设置 → 模型**，找到 **Anthropic** 或 **OpenAI Codex** 卡片，在 **B-1003** 区块里点
+**登录**。登录在服务商自己的页面上完成；令牌只保存在这台 Mac 的 Harness 凭据库里。
+**退出登录**会删除它。
+
+完整说明见 [B-1003 README](packages/b-1003-ai-connection/README.zh.md)。
 
 ---
 
@@ -133,7 +157,13 @@ npx @deepseek-ai/dsh plugin --profile web list
 如果以后发布到 npm，更新方式与安装时相同：
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-local-models-bundle@latest
+npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-dsh-local-and-online-model-connection@latest
+```
+
+AI 连接包的更新方式相同：
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-ai-connection@latest
 ```
 
 ## 适配标记怎么算
@@ -166,6 +196,8 @@ npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-local-models-bun
 | 引擎一直没变成 **Running** | 先确认 `node -v` 是 20 以上；并且必须先下载一个模型。 |
 | 回答很慢、电脑卡 | 换 **Compact**，或者选更小的模型。 |
 | 装完看不到插件 | 按第 5 步重启；再核对第 3 步的 profile 名字。 |
+| 服务商卡片上没有 **B-1003** 区块 | 模型页里这个服务商还没保存，或已安装的 pi-ai 目录没有它的登录流程。先保存服务商；详见 [B-1003 README](packages/b-1003-ai-connection/README.zh.md)。 |
+| B-1003 登录页打开了但回不来 | 浏览器必须在这台 Mac 上才能自动回调。否则请把浏览器里显示的验证码粘贴进 B-1003 区块。 |
 | `cd: no such file or directory` | 你不在克隆下来的那个文件夹里。先 `cd ~`，或用 `find ~ -maxdepth 4 -type d -name "*local-models*"` 找出它在哪；用 ZIP 下载解压的话，文件夹通常叫 `b-dsh-local-models-main`。 |
 
 ---
@@ -176,6 +208,7 @@ npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-local-models-bun
 - **要求 PATH 上的 Node 能加载原生模块**。苹果签名的 Node 不行，macOS 上建议用 Homebrew 或 nvm 安装的 Node。
 - **同时只能跑一个模型**，引擎把模型放在内存里。
 - **能力标签是推断出来的**。Hugging Face 并不标注“工具调用”和“推理”，所以这些标签来自仓库名和 tag，详情页也写明了这一点。
+- **订阅登录取决于服务商**。B-1003 只能提供已安装 pi-ai 目录里带的流程，服务商也可能随时修改或撤回它们。
 
 ---
 
@@ -183,9 +216,10 @@ npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-local-models-bun
 
 ```
 packages/
-  b-1001-local-engine/          引擎（仅 Host）
-  b-1002-local-models/          卡片（仅 Client）
-  b-1003-local-models-bundle/   一次装好两者的套件
+  b-1001-local-engine/                        引擎（仅 Host）
+  b-1002-local-models/                        卡片（仅 Client）
+  b-1003-ai-connection/                       Claude / ChatGPT 登录卡片与 Host 桥
+  b-dsh-local-and-online-model-connection/    一次装好三者的安装包
 ```
 
 ## 许可

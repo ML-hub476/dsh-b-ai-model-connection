@@ -1,8 +1,8 @@
 {
-  "name": "@ml-hub476/b-1003-local-models-bundle",
+  "name": "@ml-hub476/b-dsh-local-and-online-model-connection",
   "version": "0.1.0",
   "private": false,
-  "description": "B-1003 Local Models Bundle — installs B-1001 (engine) and B-1002 (card) together.",
+  "description": "B-dsh-LocalAndOnline-model-connection — one install for B-1001 (local engine), B-1002 (local-models card), and B-1003 (Claude/ChatGPT sign-in).",
   "type": "module",
   "main": "./index.js",
   "exports": {
@@ -16,6 +16,8 @@
     "locale/en.json",
     "locale/zh.json",
     "icon.svg",
+    "README.md",
+    "README.zh.md",
     "LICENSE"
   ],
   "keywords": [
@@ -23,13 +25,17 @@
     "dsh-plugin",
     "deepseek-harness",
     "local-models",
+    "claude",
+    "chatgpt",
+    "oauth",
     "bundle",
-    "b-1003"
+    "b-dsh"
   ],
   "license": "MIT",
   "dependencies": {
     "@ml-hub476/b-1001-local-engine": "file:../b-1001-local-engine",
-    "@ml-hub476/b-1002-local-models": "file:../b-1002-local-models"
+    "@ml-hub476/b-1002-local-models": "file:../b-1002-local-models",
+    "@ml-hub476/b-1003-ai-connection": "file:../b-1003-ai-connection"
   },
   "dsh": {
     "bundle": {
@@ -39,7 +45,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ML-hub476/b-dsh-local-models.git",
-    "directory": "packages/b-1003-local-models-bundle"
+    "directory": "packages/b-dsh-local-and-online-model-connection"
   },
   "homepage": "https://github.com/ML-hub476/b-dsh-local-models#readme",
   "bugs": {
