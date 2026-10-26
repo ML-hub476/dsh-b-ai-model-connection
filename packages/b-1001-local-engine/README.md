@@ -64,6 +64,15 @@ unless you delete them. In the desktop app, remove it from the Plugin Manager pa
 CLI refuses `desktop`. If B-1001 was installed by the one-install package, remove that package
 instead — you cannot remove this row on its own while the package owns it.
 
+## If the engine stops starting
+
+If you renamed or moved this repository folder while the app was running, the engine may still
+point at the old `worker.mjs` path. Restart the app, or toggle B-1001 off and on in the Plugin
+Manager, then press **Start engine** again. The model files and downloads are untouched.
+
+A card that shows only `Node.js v24.19.0` is showing the last line of that crash, not a model
+problem.
+
 ## License
 
 MIT © Bing Dai

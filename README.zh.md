@@ -249,6 +249,7 @@ npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-ai-connection@la
 | `Cannot find package 'node-llama-cpp'` | 第 2 步没做。在仓库文件夹里运行 `npm install node-llama-cpp`。 |
 | 引擎报错，里面出现 **code signature** 或 **Team IDs** | 你的 Node 是苹果签名的官方版。改用一个：`brew install node`，然后 `B1001_NODE=/opt/homebrew/bin/node npx @deepseek-ai/dsh web` 启动。 |
 | 引擎一直没变成 **Running** | 先确认 `node -v` 是 20 以上；并且必须先下载一个模型。 |
+| 重命名/移动仓库文件夹后引擎启动不了 | 重启应用，或在**插件管理**里把 B-1001 关闭再打开，让它重新加载新的 `worker.mjs` 路径。卡片上可能只显示 `Node.js v24.19.0`，那只是 Node “找不到 worker”崩溃的最后一行，不是模型问题。 |
 | 回答很慢、电脑卡 | 换 **Compact**，或者选更小的模型。 |
 | 装完看不到插件 | 按第 5 步重启；再核对第 3 步的 profile 名字。 |
 | 服务商卡片上没有 **B-1003** 区块 | 模型页里这个服务商还没保存，或已安装的 pi-ai 目录没有它的登录流程。先保存服务商；详见 [B-1003 README](packages/b-1003-ai-connection/README.zh.md)。 |

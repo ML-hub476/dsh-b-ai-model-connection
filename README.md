@@ -260,6 +260,7 @@ The three suggestions on each model page mean:
 | `Cannot find package 'node-llama-cpp'` | Step 2 was skipped. Run `npm install node-llama-cpp` in the repository folder. |
 | Engine says *error*, message mentions **code signature** or **Team IDs** | Your Node is the official signed build. Install a different one: `brew install node`, then start with `B1001_NODE=/opt/homebrew/bin/node npx @deepseek-ai/dsh web`. |
 | Engine never says **Running** | Check `node -v` is 20+. A model has to be downloaded before the engine can start. |
+| Engine will not start after renaming or moving the repo folder | Restart the app, or toggle B-1001 off and on in the Plugin Manager, so the engine reloads the new `worker.mjs` path. The card may show only `Node.js v24.19.0`; that is the last line of Node's “cannot find worker” crash, not a model problem. |
 | Model answers slowly, computer swaps | Pick **Compact**, or choose a smaller model. |
 | Plugin not listed after install | Restart the app (step 5); check the profile name in step 3. |
 | No **B-1003** block on a provider card | The provider row is not saved in Models, or the installed pi-ai catalog offers no sign-in for it. Save the provider first; see the [B-1003 README](packages/b-1003-ai-connection/README.md). |
