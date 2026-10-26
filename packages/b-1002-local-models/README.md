@@ -27,10 +27,27 @@ otherwise             → Too big
 
 ## Install
 
+B-1002 is only the card: it needs B-1001 for the engine. Install both, in this order:
+
 ```sh
-dsh plugin --profile desktop add /path/to/packages/b-1001-local-engine
-dsh plugin --profile desktop add /path/to/packages/b-1002-local-models
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1001-local-engine"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1002-local-models"
 ```
+
+These commands target a CLI-started `web` profile. In the desktop app, use its **Plugin Manager**
+page instead; the `dsh` command line refuses the `desktop` profile.
+
+B-1002 alone renders a card that says the engine is not installed.
+
+## Remove
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1002-local-models
+```
+
+The card disappears; the engine and its downloaded models stay. In the desktop app, remove it
+from the Plugin Manager page instead; the CLI refuses `desktop`. If B-1002 was installed by the
+one-install package, remove that package instead.
 
 ## License
 

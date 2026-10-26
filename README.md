@@ -6,8 +6,8 @@ One install for **local and online models** in DeepSeek Harness: run open-source
 your own computer, and sign in to Claude Pro/Max or ChatGPT Plus/Pro from the same Models page.
 The engine ships with the plugin.
 
-> The GitHub repository keeps its original address (`ML-hub476/b-dsh-local-models`); the product
-> name is now **B-dsh-LocalAndOnline-model-connection**.
+> Repository: [ML-hub476/dsh-b-ai-model-connection](https://github.com/ML-hub476/dsh-b-ai-model-connection).
+> The product name is **B-dsh-LocalAndOnline-model-connection**.
 
 ---
 
@@ -64,8 +64,8 @@ Run `pnpm -v` again; it must print a version before you continue.
 ### 1. Get this repository
 
 ```sh
-git clone https://github.com/ML-hub476/b-dsh-local-models.git
-cd b-dsh-local-models
+git clone https://github.com/ML-hub476/dsh-b-ai-model-connection.git
+cd dsh-b-ai-model-connection
 ```
 
 No git? Open the repository page, press **Code → Download ZIP**, unzip it, then `cd` into the
@@ -87,7 +87,8 @@ ls ~/.dsh/profiles
 ```
 
 You will usually see `web` (if you start the app with `npx @deepseek-ai/dsh web`) or `desktop`
-(if you use the desktop app). Use whatever name appears here in the next command.
+(if you use the desktop app). The commands below use `web`; desktop app users use the app's
+**Plugin Manager** page instead.
 
 ### 4. Install the plugin
 
@@ -95,10 +96,9 @@ You will usually see `web` (if you start the app with `npx @deepseek-ai/dsh web`
 npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-dsh-local-and-online-model-connection"
 ```
 
-Replace `web` with the name from step 3.
-
-> Using the **desktop app** instead of npx? The command is
-> `dsh plugin --profile desktop add "$PWD/packages/b-dsh-local-and-online-model-connection"`.
+Replace `web` with the name from step 3 when it is a CLI-started profile. If step 3 showed
+`desktop`, use the desktop app's **Plugin Manager** page instead — the `dsh` command line refuses
+the `desktop` profile because the Electron application owns it.
 
 ### 5. Restart the app
 
@@ -130,7 +130,8 @@ row ids would collide.
 npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
 ```
 
-Use the same profile name as step 3.
+Use `web` (or your non-desktop profile name). In the desktop app, use the Plugin Manager page
+instead of this command.
 
 Then open **Settings → Models**, find the **Anthropic** or **OpenAI Codex** card, and press
 **Sign in** in the **B-1003** block. The sign-in happens on the provider's own page; the token
@@ -140,12 +141,73 @@ Full details: [B-1003 README](packages/b-1003-ai-connection/README.md).
 
 ---
 
+## Install only one part
+
+The one-install package is the easiest. If you only want part of it, install the packages you
+need instead — **never beside the one-install package**, because two rows with the same id collide.
+
+| You want | Install | What you get |
+|---|---|---|
+| Local models only | B-1001 + B-1002 | The engine and its Models card |
+| Claude / ChatGPT only | B-1003 | The account sign-in block, no local engine |
+| Local engine without the card | B-1001 | A running endpoint and the `local-builtin` route, no UI |
+| Everything | the one-install package | All three rows |
+
+```sh
+# Local models only
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1001-local-engine"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1002-local-models"
+
+# Claude / ChatGPT only
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
+```
+
+These commands target the `web` profile. In the desktop app, add the same package folders from its
+**Plugin Manager** page. B-1002 without B-1001 shows a card that says the engine is not installed.
+B-1001 alone has no UI, so set `modelPath` in `packages/b-1001-local-engine/cordis.patch.yml` to
+your own `.gguf`, or leave it empty and download a model through B-1002.
+
+---
+
+## Uninstall
+
+Remove the one-install package:
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-dsh-local-and-online-model-connection
+```
+
+That removes the package and its three rows. If you installed the parts separately, remove them
+one by one:
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1003-ai-connection
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1002-local-models
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1001-local-engine
+```
+
+The command needs `pnpm` on your PATH (step 0b). If the one-install package is what you have, you
+cannot remove just one row from it: remove the package, then install the parts you want to keep.
+These commands target the `web` profile; in the desktop app, remove the bundle from its **Plugin
+Manager** page — the CLI refuses the `desktop` profile.
+
+### What stays behind
+
+- **Sign-ins** live in `~/.dsh/.credentials.yaml` under `llm-pi-ai/<provider>`. Use **Sign out**
+  in Settings → Models before removing B-1003 if you want them deleted.
+- **Downloaded models** live in `~/.dsh/local-engine/models`; delete them manually.
+- The **`local-builtin` provider** may remain in the profile's `llm-pi-ai` config after B-1001 is
+  removed; remove it in Settings → Models.
+- Restart the app (or refresh the page) after removing.
+
+---
+
 ## Update to a newer version
 
 If you installed the plugin from this repository folder:
 
 ```sh
-cd b-dsh-local-models     # the folder you cloned
+cd dsh-b-ai-model-connection     # the folder you cloned
 git pull
 ```
 
@@ -202,7 +264,7 @@ The three suggestions on each model page mean:
 | Plugin not listed after install | Restart the app (step 5); check the profile name in step 3. |
 | No **B-1003** block on a provider card | The provider row is not saved in Models, or the installed pi-ai catalog offers no sign-in for it. Save the provider first; see the [B-1003 README](packages/b-1003-ai-connection/README.md). |
 | B-1003 login page opens but never returns | The browser must be on this Mac for the automatic callback. Otherwise paste the code shown in the browser into the B-1003 block. |
-| `cd: no such file or directory` | You are in the wrong folder. Run `cd ~` first, or find the clone with `find ~ -maxdepth 4 -type d -name "*local-models*"`. A ZIP download is usually named `b-dsh-local-models-main`. |
+| `cd: no such file or directory` | You are in the wrong folder. Run `cd ~` first, or find the clone with `find ~ -maxdepth 4 -type d -name "dsh-b-ai-model-connection*"`. A ZIP download is usually named `dsh-b-ai-model-connection-main`. |
 
 ---
 

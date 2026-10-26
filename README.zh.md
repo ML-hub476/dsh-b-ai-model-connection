@@ -6,8 +6,8 @@ DeepSeek Harness 的**本地 + 在线**模型一次安装：在自己的电脑�
 个“设置 → 模型”页登录 Claude Pro/Max 或 ChatGPT Plus/Pro。
 引擎随插件一起安装。
 
-> GitHub 仓库保留原来的地址（`ML-hub476/b-dsh-local-models`），产品名现在是
-> **B-dsh-LocalAndOnline-model-connection**。
+> 仓库地址：[ML-hub476/dsh-b-ai-model-connection](https://github.com/ML-hub476/dsh-b-ai-model-connection)。
+> 产品名是 **B-dsh-LocalAndOnline-model-connection**。
 
 ---
 
@@ -63,8 +63,8 @@ npm install -g pnpm       # 装完仍然找不到的话：
 ### 1. 取得本仓库
 
 ```sh
-git clone https://github.com/ML-hub476/b-dsh-local-models.git
-cd b-dsh-local-models
+git clone https://github.com/ML-hub476/dsh-b-ai-model-connection.git
+cd dsh-b-ai-model-connection
 ```
 
 没有 git？打开仓库网页，点 **Code → Download ZIP**，解压后 `cd` 进解压出来的文件夹。
@@ -85,7 +85,7 @@ ls ~/.dsh/profiles
 ```
 
 一般是 `web`（用 `npx @deepseek-ai/dsh web` 启动时）或 `desktop`（用桌面版时）。
-下一步命令里就填这里显示的名字。
+下面的命令用 `web`；桌面版用户请改用应用里的**插件管理**页。
 
 ### 4. 安装插件
 
@@ -93,10 +93,8 @@ ls ~/.dsh/profiles
 npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-dsh-local-and-online-model-connection"
 ```
 
-把 `web` 换成第 3 步看到的名字。
-
-> 用的是**桌面版**而不是 npx？命令是：
-> `dsh plugin --profile desktop add "$PWD/packages/b-dsh-local-and-online-model-connection"`
+把 `web` 换成第 3 步看到的 CLI profile。若第 3 步显示 `desktop`，请改用桌面应用的
+**插件管理**页 —— `dsh` 命令行会拒绝 `desktop`，因为这个 profile 由桌面应用独占管理。
 
 ### 5. 重启应用
 
@@ -126,7 +124,7 @@ npx @deepseek-ai/dsh web
 npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
 ```
 
-profile 名字与第 3 步相同。
+命令用 `web`（或非 desktop 的 profile）。桌面版用户请用**插件管理**页，而不是这条命令。
 
 然后打开**设置 → 模型**，找到 **Anthropic** 或 **OpenAI Codex** 卡片，在 **B-1003** 区块里点
 **登录**。登录在服务商自己的页面上完成；令牌只保存在这台 Mac 的 Harness 凭据库里。
@@ -136,12 +134,69 @@ profile 名字与第 3 步相同。
 
 ---
 
+## 只装其中一部分
+
+一次安装整个包最省事。如果你只要其中一部分，就单独安装对应包 —— **不要再和“一次安装包”并存**，
+否则相同的行 id 会冲突。
+
+| 你想要 | 安装 | 得到什么 |
+|---|---|---|
+| 只要本地模型 | B-1001 + B-1002 | 引擎和它的模型卡片 |
+| 只要 Claude / ChatGPT | B-1003 | 账号登录区块，不需要本地引擎 |
+| 只要本地引擎、不要卡片 | B-1001 | 可用的接口和 `local-builtin` 路由，没有界面 |
+| 全都要 | 一次安装包 | 三行全部 |
+
+```sh
+# 只要本地模型
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1001-local-engine"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1002-local-models"
+
+# 只要 Claude / ChatGPT
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
+```
+
+命令用 `web`；桌面版用户在**插件管理**页添加同样的包目录。只装 B-1002 不装 B-1001 时，卡片会提示引擎未安装。只装 B-1001
+没有界面，请在 `packages/b-1001-local-engine/cordis.patch.yml` 里把 `modelPath` 改成你的
+`.gguf`，或者留空，稍后通过 B-1002 下载。
+
+---
+
+## 卸载
+
+卸载一次安装包：
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-dsh-local-and-online-model-connection
+```
+
+这会移除安装包和它的三行。如果你是分别安装的，就逐个移除：
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1003-ai-connection
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1002-local-models
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1001-local-engine
+```
+
+命令需要 PATH 上有 `pnpm`（第 0b 步）。如果装的是“一次安装包”，不能只从里面删掉某一行：
+先卸载安装包，再安装你想保留的部分。命令用 `web`；桌面版用户在**插件管理**页移除该包 ——
+命令行会拒绝 `desktop`。
+
+### 卸载后还会留下什么
+
+- **登录记录**在 `~/.dsh/.credentials.yaml` 的 `llm-pi-ai/<provider>` 下。想删除的话，先在
+  **设置 → 模型**里点**退出登录**，再卸载 B-1003。
+- **已下载的模型**在 `~/.dsh/local-engine/models`，需要手动删除。
+- 卸载 B-1001 后，配置里的 **`local-builtin` 服务商**可能还在；请在**设置 → 模型**里删掉它。
+- 卸载后重启应用（或刷新页面）。
+
+---
+
 ## 更新到新版本
 
 如果插件是从本仓库文件夹安装的：
 
 ```sh
-cd b-dsh-local-models     # 你克隆下来的那个文件夹
+cd dsh-b-ai-model-connection     # 你克隆下来的那个文件夹
 git pull
 ```
 
@@ -198,7 +253,7 @@ npx @deepseek-ai/dsh plugin --profile web add @ml-hub476/b-1003-ai-connection@la
 | 装完看不到插件 | 按第 5 步重启；再核对第 3 步的 profile 名字。 |
 | 服务商卡片上没有 **B-1003** 区块 | 模型页里这个服务商还没保存，或已安装的 pi-ai 目录没有它的登录流程。先保存服务商；详见 [B-1003 README](packages/b-1003-ai-connection/README.zh.md)。 |
 | B-1003 登录页打开了但回不来 | 浏览器必须在这台 Mac 上才能自动回调。否则请把浏览器里显示的验证码粘贴进 B-1003 区块。 |
-| `cd: no such file or directory` | 你不在克隆下来的那个文件夹里。先 `cd ~`，或用 `find ~ -maxdepth 4 -type d -name "*local-models*"` 找出它在哪；用 ZIP 下载解压的话，文件夹通常叫 `b-dsh-local-models-main`。 |
+| `cd: no such file or directory` | 你不在克隆下来的那个文件夹里。先 `cd ~`，或用 `find ~ -maxdepth 4 -type d -name "dsh-b-ai-model-connection*"` 找出它在哪；用 ZIP 下载解压的话，文件夹通常叫 `dsh-b-ai-model-connection-main`。 |
 
 ---
 

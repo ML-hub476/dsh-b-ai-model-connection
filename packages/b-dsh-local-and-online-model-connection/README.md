@@ -41,12 +41,12 @@ The patch that this package installs:
 From this repository:
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile desktop add "$PWD/packages/b-dsh-local-and-online-model-connection"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-dsh-local-and-online-model-connection"
 ```
 
-Use the profile name that `ls ~/.dsh/profiles` shows (`desktop` for the desktop app, `web` for
-`npx @deepseek-ai/dsh web`). For the local engine, also follow the root README's
-`npm install node-llama-cpp` step once.
+Use `web` for a CLI-started Harness. In the desktop app, use its **Plugin Manager** page instead;
+the `dsh` command line refuses the `desktop` profile. For the local engine, also follow the root
+README's `npm install node-llama-cpp` step once.
 
 ---
 
@@ -62,12 +62,49 @@ already part of it.
 
 | You want | Install |
 |---|---|
-| Local models only | B-1001 and B-1002, or this package and ignore B-1003 |
+| Local models only | B-1001 and B-1002, installed separately |
 | Claude / ChatGPT sign-in only | B-1003 alone |
 | Local **and** online | this package |
 
+```sh
+# Local models only
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1001-local-engine"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1002-local-models"
+
+# Claude / ChatGPT only
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
+```
+
+Do not install these beside this package: the three rows already exist here and the ids would
+collide. B-1002 without B-1001 shows a card that says the engine is not installed. These commands
+target the `web` profile; in the desktop app, add the same folders from the Plugin Manager page.
+
 When this package is installed, **Settings → Models** shows all three: the B-1001 engine, the
 B-1002 card, and the B-1003 sign-in block on each OAuth-capable provider card.
+
+---
+
+## Uninstall
+
+Remove the whole package with one command:
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-dsh-local-and-online-model-connection
+```
+
+That removes the package and all three rows. You cannot remove just one row from inside this
+package: remove it, then install the parts you want to keep. The command uses `pnpm`, so it must
+be on your PATH. In the desktop app, remove the bundle from the Plugin Manager page instead; the
+CLI refuses `desktop`.
+
+### What stays behind
+
+- **Sign-ins** are stored in `~/.dsh/.credentials.yaml` under `llm-pi-ai/<provider>`. Use
+  **Sign out** in Settings → Models before removing if you want them deleted.
+- **Downloaded models** are in `~/.dsh/local-engine/models`; delete them manually.
+- The **`local-builtin` provider** may remain in the profile's `llm-pi-ai` config; remove it in
+  Settings → Models if you want a clean configuration.
+- Restart the app (or refresh the page) after removing.
 
 ---
 

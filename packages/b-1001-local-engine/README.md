@@ -36,6 +36,34 @@ crash away from your session.
 | `port` | fixed listen port (default 18111) so a written route survives restarts |
 | `displayName` | label in the model menu |
 
+## Install alone
+
+B-1001 is a Host-only plugin: it starts the engine and registers the `local-builtin` route, but
+it has no card of its own. Install it alone when you want the endpoint without the Settings page.
+
+Before installing, open this package's `cordis.patch.yml` and set `modelPath` to your own `.gguf`,
+or to `''` and download a model later through B-1002. This repository's default points at the
+author's model file; replace it if that path is not on your machine.
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1001-local-engine"
+```
+
+This command targets a CLI-started `web` profile. In the desktop app, use its **Plugin Manager**
+page instead; the `dsh` command line refuses the `desktop` profile.
+
+## Remove
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1001-local-engine
+```
+
+Removing it stops the engine. The `local-builtin` entry may remain in the profile's `llm-pi-ai`
+config; remove it in Settings → Models. Downloaded models stay in `~/.dsh/local-engine/models`
+unless you delete them. In the desktop app, remove it from the Plugin Manager page instead; the
+CLI refuses `desktop`. If B-1001 was installed by the one-install package, remove that package
+instead — you cannot remove this row on its own while the package owns it.
+
 ## License
 
 MIT © Bing Dai

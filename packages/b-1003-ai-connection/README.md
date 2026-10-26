@@ -46,11 +46,25 @@ repository's desktop profile already does).
 From this repository:
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile desktop add "$PWD/packages/b-1003-ai-connection"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
 ```
 
-Use the profile name that `ls ~/.dsh/profiles` shows (`desktop` for the desktop app, `web` for
-`npx @deepseek-ai/dsh web`). Restart the app if the plugin does not appear immediately.
+Use `web` for a CLI-started Harness. In the desktop app, use its **Plugin Manager** page instead;
+the `dsh` command line refuses the `desktop` profile. Restart the app if the plugin does not
+appear immediately.
+
+---
+
+## Remove
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1003-ai-connection
+```
+
+Removing the plugin does not delete the saved sign-ins. Use **Sign out** in Settings → Models
+first if you want them gone. In the desktop app, remove it from the Plugin Manager page instead;
+the CLI refuses `desktop`. If B-1003 came with the one-install package, remove that package
+instead.
 
 ---
 

@@ -33,6 +33,32 @@ Harness 自带的是经过加固运行时的 Node（带 Apple 签名），macOS 
 | `port` | 固定端口，默认 18111，保证写好的路由在重启后依然有效 |
 | `displayName` | 模型菜单中显示的名称 |
 
+## 单独安装
+
+B-1001 是纯 Host 插件：它启动引擎并注册 `local-builtin` 路由，但没有自己的界面卡片。
+只想要接口、不需要设置页时，单独安装它：
+
+安装前，打开本包的 `cordis.patch.yml`，把 `modelPath` 改成你自己的 `.gguf`；也可以留空，
+之后通过 B-1002 下载。本仓库的默认值指向作者的模型文件，如果那台机器上没有这个路径，请替换。
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1001-local-engine"
+```
+
+这条命令用于命令行启动的 `web` profile。桌面版用户请用应用里的**插件管理**页；
+`dsh` 命令行会拒绝 `desktop` profile。
+
+## 卸载
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1001-local-engine
+```
+
+卸载会停止引擎。配置里的 `local-builtin` 条目可能还在；请在**设置 → 模型**里删掉它。
+已下载的模型仍留在 `~/.dsh/local-engine/models`，需要手动删除。桌面版用户请在**插件管理**页
+移除；命令行会拒绝 `desktop`。如果 B-1001 是随“一次安装包”装上的，请卸载那个包 ——
+只要包拥有这一行，就不能单独删掉它。
+
 ## 许可
 
 MIT © Bing Dai

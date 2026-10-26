@@ -43,11 +43,23 @@
 在本仓库里运行：
 
 ```sh
-npx @deepseek-ai/dsh plugin --profile desktop add "$PWD/packages/b-1003-ai-connection"
+npx @deepseek-ai/dsh plugin --profile web add "$PWD/packages/b-1003-ai-connection"
 ```
 
-把 `desktop` 换成 `ls ~/.dsh/profiles` 显示的名字（桌面应用是 `desktop`，
-`npx @deepseek-ai/dsh web` 是 `web`）。如果没有立刻出现，重启应用。
+命令用 `web`。桌面版用户请用应用里的**插件管理**页；`dsh` 命令行会拒绝 `desktop` profile。
+如果没有立刻出现，重启应用。
+
+---
+
+## 卸载
+
+```sh
+npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1003-ai-connection
+```
+
+卸载插件不会删除已经保存的登录记录。想删除的话，先在**设置 → 模型**里点**退出登录**。
+桌面版用户请在**插件管理**页移除；命令行会拒绝 `desktop`。如果 B-1003 是随“一次安装包”
+装上的，请卸载那个包。
 
 ---
 
