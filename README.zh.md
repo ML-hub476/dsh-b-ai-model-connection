@@ -17,7 +17,7 @@ DeepSeek Harness 的**本地 + 在线**模型一次安装：在自己的电脑�
 |---|---|---|
 | **B-1001** | `b-1001-local-engine` | 引擎：搜索 Hugging Face，把模型下载到 `~/.dsh/local-engine/models`，用 llama.cpp 在子进程中运行，并提供 OpenAI 兼容接口。 |
 | **B-1002** | `b-1002-local-models` | “设置 → 模型”页上的卡片：引擎状态、模型列表、Hugging Face 搜索、本机 CPU/内存/磁盘、适配标记，以及带三个推荐下载的详情页。 |
-| **B-1003** | `b-1003-ai-connection` | “设置 → 模型”页上的 Claude / ChatGPT 账号登录。给每张服务商卡片加上**登录**区块，令牌保存在 Harness 凭据库中。已包含在下面的安装包里。 |
+| **B-1003** | `b-1003-ai-connection` | “设置 → 模型”页上的 Claude / ChatGPT 账号登录。给每张服务商卡片加上**登录**区块，并显示**登录的是哪个账号**（邮箱和套餐），令牌保存在 Harness 凭据库中。已包含在下面的安装包里。 |
 | **B-dsh** | `b-dsh-local-and-online-model-connection` | 安装包：**一次装好 B-1001、B-1002 与 B-1003** —— **装这一个就够了**。 |
 
 ---

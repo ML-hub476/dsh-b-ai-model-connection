@@ -20,6 +20,13 @@ window.__ModuleLoader__.load({
         signOut: 'Sign out',
         signInHint: 'Opens the provider’s own sign-in page in your browser.',
         signedInDetail: 'Model requests use this account automatically.',
+        accountAs: 'Signed in as',
+        accountReading: 'Reading the account…',
+        accountRejected: 'The saved sign-in was rejected. Sign in again to refresh it.',
+        accountForbidden: 'This token may not read the account profile.',
+        accountOffline: 'Could not reach the provider to read the account.',
+        accountHttp: 'The provider answered HTTP {status} while reading the account.',
+        accountUnreadable: 'The saved sign-in does not name its account.',
         signOutHint: 'Removes the saved sign-in from this Mac. It does not cancel the subscription.',
         signOutConfirm: 'Remove the saved sign-in from this Mac? You can sign in again later.',
         waiting: 'Waiting for the provider…',
@@ -46,6 +53,13 @@ window.__ModuleLoader__.load({
         signOut: '退出登录',
         signInHint: '会在浏览器中打开服务商自己的登录页。',
         signedInDetail: '模型请求会自动使用这个账号。',
+        accountAs: '当前账号',
+        accountReading: '正在读取账号…',
+        accountRejected: '本机保存的登录已被拒绝，请重新登录。',
+        accountForbidden: '该登录令牌无权读取账号资料。',
+        accountOffline: '无法连接服务商读取账号。',
+        accountHttp: '读取账号时服务商返回 HTTP {status}。',
+        accountUnreadable: '保存的登录记录里没有账号信息。',
         signOutHint: '只会删除本机保存的登录记录，不会取消订阅。',
         signOutConfirm: '要删除本机保存的登录记录吗？之后可以重新登录。',
         waiting: '正在等待服务商…',
@@ -62,6 +76,14 @@ window.__ModuleLoader__.load({
         savedFirst: '请先保存这个服务商，然后再登录。',
         startFailed: '无法开始登录。',
       },
+    }
+
+    const ACCOUNT_ERROR_KEYS = {
+      rejected: 'accountRejected',
+      forbidden: 'accountForbidden',
+      offline: 'accountOffline',
+      http: 'accountHttp',
+      unreadable: 'accountUnreadable',
     }
 
     function createTranslate(ctx) {
@@ -105,6 +127,9 @@ window.__ModuleLoader__.load({
       .b1003-dot-on { background: var(--dsw-alias-state-success-primary); }
       .b1003-body { display: flex; flex-direction: column; gap: 8px; }
       .b1003-hint { font-size: 12px; line-height: 1.55; color: var(--dsw-alias-label-secondary); }
+      .b1003-account { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; line-height: 1.5; }
+      .b1003-account-mail { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; word-break: break-all; }
+      .b1003-plan { padding: 0 6px; border-radius: 5px; background: color-mix(in srgb, var(--dsw-alias-brand-primary) 14%, transparent); color: var(--dsw-alias-brand-primary); font-size: 11px; font-weight: 600; line-height: 17px; white-space: nowrap; }
       .b1003-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
       .b1003-quiet { font-size: 11.5px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
       .b1003-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--dsw-alias-border-l1); background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 12.5px; line-height: 1.4; text-decoration: none; cursor: pointer; }
@@ -134,6 +159,7 @@ window.__ModuleLoader__.load({
       const { provider, configured, t } = props
       const providerId = typeof provider?.provider === 'string' ? provider.provider : ''
       const [status, setStatus] = useState(undefined)
+      const [account, setAccount] = useState(undefined)
       const [running, setRunning] = useState(false)
       const [notice, setNotice] = useState(null)
       const [prompt, setPrompt] = useState(null)
@@ -178,9 +204,29 @@ window.__ModuleLoader__.load({
         }
       }, [call, providerId])
 
+      const loadAccount = useCallback(async () => {
+        if (providerId.length === 0) return
+        try {
+          const value = await call(`/account?provider=${encodeURIComponent(providerId)}`)
+          setAccount(value?.signedIn === true ? (value.account ?? null) : null)
+        } catch {
+          setAccount(null)
+        }
+      }, [call, providerId])
+
       useEffect(() => {
         void refresh()
       }, [refresh])
+
+      useEffect(() => {
+        if (status?.signedIn !== true) {
+          setAccount(undefined)
+          return
+        }
+        void loadAccount()
+        // `settled` is in the list so signing in again re-reads the new grant
+        // even though `signedIn` was already true.
+      }, [status?.signedIn, settled, loadAccount])
 
       useEffect(() => {
         if (prompt === null) return
@@ -288,6 +334,7 @@ window.__ModuleLoader__.load({
         try {
           await call('/sign-out', { provider: providerId })
           setStatus((current) => (current ? { ...current, signedIn: false, active: false } : current))
+          setAccount(undefined)
           setSettled(null)
           setNotice(null)
           setPrompt(null)
@@ -315,6 +362,25 @@ window.__ModuleLoader__.load({
       const canSignIn = configured !== false && !running
       const note = (kind, message) =>
         h('div', { className: kind === 'bad' ? 'b1003-note b1003-note-bad' : 'b1003-note', role: 'status' }, message)
+
+      // Which account the grant belongs to. `undefined` means the answer is
+      // still in flight, `null` means there is nothing to name, and an object
+      // is either the account or the reason it could not be read.
+      const accountView = () => {
+        if (account === undefined) return h('div', { className: 'b1003-quiet' }, t('accountReading'))
+        if (account === null) return null
+        if (account.error !== undefined) {
+          const key = ACCOUNT_ERROR_KEYS[account.error.code] ?? 'accountUnreadable'
+          return h('div', { className: 'b1003-quiet' }, t(key, { status: account.error.status ?? '?' }))
+        }
+        return h(
+          'div',
+          { className: 'b1003-account' },
+          h('span', { className: 'b1003-quiet' }, t('accountAs')),
+          account.email ? h('span', { className: 'b1003-account-mail' }, account.email) : null,
+          account.plan ? h('span', { className: 'b1003-plan' }, account.plan) : null,
+        )
+      }
 
       const noticeView = (value) =>
         h(
@@ -434,6 +500,7 @@ window.__ModuleLoader__.load({
             ? h(
                 'div',
                 { className: 'b1003-body' },
+                accountView(),
                 h('div', { className: 'b1003-hint' }, t('signedInDetail')),
                 h(
                   'div',

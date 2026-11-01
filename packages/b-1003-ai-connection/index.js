@@ -8,11 +8,17 @@
  *
  *   - a small HTTP bridge under `/b-1003` that starts one flow, relays its
  *     notices and questions to the browser, and accepts the answers;
+ *   - a read-only `/account` lookup that answers *whose* sign-in it is, so the
+ *     card can show an email and a plan instead of only "Signed in";
  *   - `client.js`, which draws the sign-in controls on the Models page.
  *
- * Nothing here reads, writes, or logs a token. The only write is the final
- * `deleteRecord` that "Sign out" performs through the credential seam.
+ * The record is the only thing this file reads, and the only thing it writes is
+ * the `deleteRecord` that "Sign out" performs through the credential seam. A
+ * token never leaves `lib/account.js`: the route answers with a name and a plan
+ * or with an error code, never with the bytes that produced them.
  */
+
+import { readAccount } from './lib/account.js'
 
 const ROUTE_PREFIX = '/b-1003'
 const RECORD_SCOPE = 'llm-pi-ai'
@@ -22,6 +28,15 @@ const MAX_BODY_BYTES = 64 * 1024
 const ATTEMPT_TIMEOUT_MS = 10 * 60 * 1000
 const ATTEMPT_KEEP_MS = 60 * 1000
 const PROVIDER_PATTERN = /^[a-z0-9][a-z0-9-]*$/
+
+/**
+ * How long a resolved account is reused. A name and a plan change when the
+ * person signs in again, not while the card is open, so five minutes keeps a
+ * reload from re-asking Anthropic, and one minute on failure keeps a dead token
+ * from being hammered every time the page is drawn.
+ */
+const ACCOUNT_TTL_MS = 5 * 60 * 1000
+const ACCOUNT_FAILURE_TTL_MS = 60 * 1000
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -52,6 +67,8 @@ function textOf(value, limit = 4000) {
 export function apply(ctx) {
   /** provider id -> in-flight or recently finished attempt */
   const attempts = new Map()
+  /** provider id -> { at, value } resolved account, including failures */
+  const accounts = new Map()
 
   function authorization() {
     const service = ctx.get('authorization')
@@ -129,6 +146,42 @@ export function apply(ctx) {
       }
     }
     return { providers }
+  }
+
+  /**
+   * Whose sign-in this provider is holding.
+   *
+   * `{ signedIn: false }` when nothing is stored; otherwise `signedIn: true`
+   * plus either an account or an `error` code, because "a token exists" and
+   * "this token can name its owner" are different facts and the card shows
+   * both. The resolved answer is memoized per provider; signing in or out
+   * clears the entry so the next read is fresh.
+   */
+  async function accountOf(rawProvider) {
+    const provider = typeof rawProvider === 'string' ? rawProvider : ''
+    const entry = entryFor(provider)
+    if (entry === undefined) throw new HttpError(404, 'This provider has no sign-in flow in this install.')
+    const store = ctx.get('credentials')
+    if (store === undefined) return { provider, signedIn: false }
+
+    let record
+    try {
+      record = await store.readRecord(entry.key)
+    } catch {
+      return { provider, signedIn: false }
+    }
+    if (record === undefined || record.kind !== 'grant') return { provider, signedIn: false }
+
+    const cached = accounts.get(provider)
+    const now = Date.now()
+    if (cached !== undefined) {
+      const ttl = cached.value?.error === undefined ? ACCOUNT_TTL_MS : ACCOUNT_FAILURE_TTL_MS
+      if (now - cached.at < ttl) return { provider, signedIn: true, account: cached.value }
+    }
+
+    const value = await readAccount(provider, record.payload)
+    accounts.set(provider, { at: Date.now(), value })
+    return { provider, signedIn: true, account: value }
   }
 
   function push(attempt, frame) {
@@ -257,6 +310,7 @@ export function apply(ctx) {
       keepTimer: undefined,
     }
     attempts.set(provider, attempt)
+    accounts.delete(provider)
     attempt.timer = setTimeout(() => cancelAttempt(attempt, 'The sign-in took too long.'), ATTEMPT_TIMEOUT_MS)
     attempt.timer.unref?.()
     void run(attempt, entry)
@@ -310,6 +364,7 @@ export function apply(ctx) {
     const attempt = attempts.get(provider)
     if (attempt?.active === true) cancelAttempt(attempt, 'The account was signed out.')
     await credentials().deleteRecord(entry.key)
+    accounts.delete(provider)
     return { ok: true, signedIn: false }
   }
 
@@ -369,6 +424,9 @@ export function apply(ctx) {
     const method = request.method ?? 'GET'
     try {
       if (method === 'GET' && path === '/status') return sendJson(response, 200, await status())
+      if (method === 'GET' && path === '/account') {
+        return sendJson(response, 200, await accountOf(url.searchParams.get('provider') ?? ''))
+      }
       if (method === 'GET' && path === '/events') {
         return sendJson(
           response,
@@ -419,6 +477,7 @@ export function apply(ctx) {
         pending?.reject(new Error('The plugin was unloaded.'))
       }
       attempts.clear()
+      accounts.clear()
     },
     'b-1003: close sign-in attempts',
   )

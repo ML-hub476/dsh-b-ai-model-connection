@@ -16,11 +16,26 @@
 | 部分 | 作用 |
 |---|---|
 | **Host 桥**（`index.js`） | 一个很小的 `/b-1003` 接口：启动一次服务商自己的授权流程，把提示和问题转给浏览器，再接收回答。 |
-| **模型卡片**（`client.js`） | 每张支持 OAuth 的服务商卡片上的 “B-1003” 区块：登录状态、**登录**、登录页链接、设备码/粘贴码、问题、**退出登录**。 |
-| **组合包补丁**（`cordis.patch.yml`） | 插入一行，同时挂载上面两半。 |
+| **模型卡片**（`client.js`） | 每张支持 OAuth 的服务商卡片上的 “B-1003” 区块：登录状态、**是哪个账号**（邮箱和套餐）、**登录**、登录页链接、设备码/粘贴码、问题、**退出登录**。 |
+| **账号查询**（`lib/account.js`） | 把保存的凭据变成它所属的账号——邮箱加订阅档位——让“已登录”能说出*是谁*。 |
+| **组合包补丁**（`cordis.patch.yml`） | 插入一行，同时挂载上面这些。 |
 
-本包不读取、不写入、也不记录令牌。令牌由服务商的登录流程通过 Harness 凭据层写入
-`llm-pi-ai/<provider>`；**退出登录**也通过同一层删除这条记录。
+令牌由服务商的登录流程通过 Harness 凭据层写入 `llm-pi-ai/<provider>`；**退出登录**也通过
+同一层删除这条记录。账号查询只读这条记录：令牌只会进请求头，不会进日志、错误信息或卡片。
+
+## 登录的是哪个账号
+
+卡片回答登录按钮回答不了的问题：这台 Mac 花的到底是**哪个** Claude 或 ChatGPT 账号。
+两个服务商，两种查法。
+
+| 服务商 | 怎么读到账号 | 代价 |
+|---|---|---|
+| **ChatGPT / OpenAI Codex** | 保存的凭据是 JWT，声明里就有邮箱（`https://api.openai.com/profile`）和套餐（`https://api.openai.com/auth` 的 `chatgpt_plan_type`）。 | 本地解码，不发请求。 |
+| **Claude / Anthropic** | 保存的是不透明的 `sk-ant-oat01-…` 令牌，读不出字段，于是请求 `GET https://api.anthropic.com/api/oauth/profile`——Claude CLI 查 `/status` 用的正是这个接口。 | 一次 HTTPS 请求，缓存五分钟。 |
+
+结果显示在**当前账号**一行：邮箱，加一个套餐标签，例如 **Claude Pro**、**Claude Max**、
+**ChatGPT Plus**、**ChatGPT Pro**。已登录但读不出账号时，卡片会用一行小字说明原因——令牌被
+拒绝、令牌没有 `user:profile` 权限、连不上接口——而不是让绿点把失败盖住。
 
 ---
 
@@ -80,6 +95,8 @@ npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1003-ai-connection
 |---|---|
 | **未登录** | 这个服务商还没有凭据记录。 |
 | **已登录** | `llm-pi-ai/<provider>` 记录存在，模型请求会使用它。 |
+| **当前账号 `you@example.com`** | 记录能说出主人；旁边的标签就是套餐。 |
+| **本机保存的登录已被拒绝** | 账号读不出来：令牌过期或已被撤销。点**重新登录**刷新。 |
 | **正在等待服务商…** | 流程正在运行；请按提示打开链接或回答问题。 |
 | **请先保存这个服务商** | 这是还没保存的草稿卡片。先应用服务商表单，再登录。 |
 
@@ -89,7 +106,7 @@ npx @deepseek-ai/dsh plugin --profile web remove @ml-hub476/b-1003-ai-connection
 
 ```
 设置 → 模型卡片
-        │  fetch /b-1003/sign-in、/events、/answer、/cancel、/sign-out
+        │  fetch /b-1003/sign-in、/events、/answer、/cancel、/sign-out、/account
         ▼
 B-1003 Host 桥（本包）
         │  ctx.authorization.begin({ method: 'oauth' })
@@ -114,6 +131,16 @@ Harness 凭据库：llm-pi-ai/<provider>
 | “Address already in use”或回调一直不来 | 回调端口被别的程序占着。退出另一个 Claude/Codex 命令行会话再试。 |
 | 登录完成但请求仍失败 | 确认模型页里这个服务商已保存并启用；路由和凭据是两件事。 |
 | “This Harness build has no authorization service” | 配置里缺少 `authorization` 行。把它加进组合（桌面应用通常自带）。 |
+
+---
+
+## 测试
+
+账号查询的测试不需要联网，也不需要真的登录过：
+
+```sh
+node --test packages/b-1003-ai-connection/test/account.test.mjs
+```
 
 ---
 

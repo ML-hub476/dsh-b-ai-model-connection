@@ -17,7 +17,7 @@ The engine ships with the plugin.
 |---|---|---|
 | **B-1001** | `b-1001-local-engine` | The engine. Searches Hugging Face, downloads models into `~/.dsh/local-engine/models`, runs them with llama.cpp in a child process, and serves an OpenAI-compatible endpoint. |
 | **B-1002** | `b-1002-local-models` | The card on **Settings → Models**. Engine status, your model shelf, Hugging Face search, your computer's CPU/memory/disk, fit marks, and a detail page with three suggested downloads. |
-| **B-1003** | `b-1003-ai-connection` | Claude / ChatGPT account sign-in on **Settings → Models**. Adds the **Sign in** block to each provider card and keeps the token in the Harness credential store. Included by the package below. |
+| **B-1003** | `b-1003-ai-connection` | Claude / ChatGPT account sign-in on **Settings → Models**. Adds the **Sign in** block to each provider card, shows **which account** (email and plan) is signed in, and keeps the token in the Harness credential store. Included by the package below. |
 | **B-dsh** | `b-dsh-local-and-online-model-connection` | The package. Installs **B-1001, B-1002, and B-1003 in one step** — **install this one**. |
 
 ---

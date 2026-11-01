@@ -17,12 +17,30 @@ sign-out action around it.
 | Piece | What it does |
 |---|---|
 | **Host bridge** (`index.js`) | Small `/b-1003` endpoint that starts one provider-owned authorization flow, relays its notices and questions to the browser, and accepts the answers. |
-| **Models card** (`client.js`) | A “B-1003” block on each OAuth-capable provider card: signed-in state, **Sign in**, the sign-in page link, device/paste codes, questions, and **Sign out**. |
-| **Bundle patch** (`cordis.patch.yml`) | Inserts the one row that mounts both halves. |
+| **Models card** (`client.js`) | A “B-1003” block on each OAuth-capable provider card: signed-in state, **which account** (email and plan), **Sign in**, the sign-in page link, device/paste codes, questions, and **Sign out**. |
+| **Account lookup** (`lib/account.js`) | Turns the stored grant into the account it belongs to — email plus subscription tier — so “Signed in” says *who*. |
+| **Bundle patch** (`cordis.patch.yml`) | Inserts the one row that mounts all of it. |
 
-Nothing in this package reads, writes, or logs a token. The token is written by the provider
-flow through the Harness credential seam at `llm-pi-ai/<provider>`; **Sign out** deletes that
-record through the same seam.
+The token is written by the provider flow through the Harness credential seam at
+`llm-pi-ai/<provider>`; **Sign out** deletes that record through the same seam. The account
+lookup reads that record, and nothing else: the token goes into a request header and never into
+a log line, an error message, or the card.
+
+## Which account is signed in
+
+The card answers the question the sign-in buttons cannot: **which** Claude or ChatGPT account
+this Mac is spending. Two providers, two ways to find out.
+
+| Provider | How the account is read | Cost |
+|---|---|---|
+| **ChatGPT / OpenAI Codex** | The stored grant is a JWT. Its claims already carry the email (`https://api.openai.com/profile`) and the plan (`https://api.openai.com/auth`.chatgpt_plan_type). | Local — no request. |
+| **Claude / Anthropic** | The stored grant is an opaque `sk-ant-oat01-…` bearer token with no readable fields, so the plugin asks `GET https://api.anthropic.com/api/oauth/profile` — the same endpoint the Claude CLI calls for `/status`. | One HTTPS request, cached five minutes. |
+
+Whatever comes back is shown under **Signed in as**: the address, then a plan chip such as
+**Claude Pro**, **Claude Max**, **ChatGPT Plus**, or **ChatGPT Pro**. When the provider is signed
+in but the account cannot be named, the card says why in a quiet line — a rejected token, a token
+without the `user:profile` scope, an unreachable endpoint — instead of hiding the failure behind
+a green dot.
 
 ---
 
@@ -86,6 +104,8 @@ the grant at the provider.
 |---|---|
 | **Not signed in** | No credential record exists for this provider yet. |
 | **Signed in** | A record exists at `llm-pi-ai/<provider>` and model requests use it. |
+| **Signed in as `you@example.com`** | The record names its owner; the chip next to it is the plan. |
+| **The saved sign-in was rejected** | The account could not be read: the token is expired or revoked. **Sign in again** refreshes it. |
 | **Waiting for the provider…** | The flow is running; follow the link or answer the question shown. |
 | **Save this provider first** | The card belongs to a draft provider that has not been saved. Apply the provider form, then sign in. |
 
@@ -95,7 +115,7 @@ the grant at the provider.
 
 ```
 Settings → Models card
-        │  fetch /b-1003/sign-in, /events, /answer, /cancel, /sign-out
+        │  fetch /b-1003/sign-in, /events, /answer, /cancel, /sign-out, /account
         ▼
 B-1003 Host bridge (this package)
         │  ctx.authorization.begin({ method: 'oauth' })
@@ -121,6 +141,17 @@ finishes is cancelled automatically after ten minutes.
 | “Address already in use” or a callback does not arrive | Another program is holding the callback port. Quit the other Claude/Codex CLI session and try again. |
 | Sign-in finishes but requests still fail | Confirm the provider row is saved and enabled in Models; the route is separate from the credential. |
 | “This Harness build has no authorization service” | The profile lacks the `authorization` row. Add it to the composition (the desktop app normally ships it). |
+| Signed in, but no email under it | The token could not be read as an account. **Sign in again**; if the line says “may not read the account profile”, the token was minted without the `user:profile` scope and only a fresh subscription sign-in fixes it. |
+
+---
+
+## Test
+
+The account lookup is tested without the network and without a sign-in:
+
+```sh
+node --test packages/b-1003-ai-connection/test/account.test.mjs
+```
 
 ---
 

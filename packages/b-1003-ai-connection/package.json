@@ -13,6 +13,7 @@
   },
   "files": [
     "index.js",
+    "lib/account.js",
     "client.js",
     "cordis.patch.yml",
     "locale/en.json",
